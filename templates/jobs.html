@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }} - ATS Tracker</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .top-bar, .filters, .pagination {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            align-items: center;
+        }
+
+        a, button {
+            text-decoration: none;
+            padding: 9px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-link {
+            background: #1f6feb;
+            color: white;
+        }
+
+        .secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .active {
+            background: #0f9d58;
+            color: white;
+        }
+
+        input, select {
+            padding: 9px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1150px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f9fafb;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-applied {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-analyzed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .score-high { color: #0f9d58; font-weight: bold; }
+        .score-mid { color: #e09f00; font-weight: bold; }
+        .score-low { color: #d93025; font-weight: bold; }
+
+        .cell-wrap {
+            max-width: 260px;
+            word-break: break-word;
+        }
+
+        .view-btn {
+            background: #1f6feb;
+            color: white;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            background: white;
+            padding: 24px;
+            border-radius: 10px;
+            text-align: center;
+            color: #666;
+        }
+
+        .summary {
+            margin-bottom: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h1>{{ page_title }}</h1>
+
+    <div class="top-bar">
+        <a href="/" class="secondary">Back to Analyzer</a>
+        <a href="/jobs" class="nav-link {% if not status_filter %}active{% endif %}">All Jobs</a>
+        <a href="/jobs/analyzed" class="nav-link {% if status_filter == 'analyzed' %}active{% endif %}">Analyzed Jobs</a>
+        <a href="/jobs/applied" class="nav-link {% if status_filter == 'applied' %}active{% endif %}">Applied Jobs</a>
+    </div>
+
+    <form class="filters" method="GET">
+        <input
+            type="text"
+            name="search"
+            placeholder="Search title, company, platform..."
+            value="{{ search }}"
+        >
+
+        <label>
+            From:
+            <input type="date" name="start_date" value="{{ start_date }}">
+        </label>
+
+        <label>
+            To:
+            <input type="date" name="end_date" value="{{ end_date }}">
+        </label>
+
+        <label>
+            Show:
+            <select name="per_page">
+                {% for n in [5, 10, 25, 50, 100] %}
+                    <option value="{{ n }}" {% if per_page == n %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <button type="submit" class="nav-link">Apply Filters</button>
+
+        {% if status_filter == 'analyzed' %}
+            <a href="/jobs/analyzed" class="secondary">Reset</a>
+        {% elif status_filter == 'applied' %}
+            <a href="/jobs/applied" class="secondary">Reset</a>
+        {% else %}
+            <a href="/jobs" class="secondary">Reset</a>
+        {% endif %}
+    </form>
+
+    <div class="summary">
+        Showing {{ analyses|length }} of {{ pagination.total }} records
+    </div>
+
+    {% if analyses %}
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Job Title</th>
+                <th>Company</th>
+                <th>Platform</th>
+                <th>ATS Score</th>
+                <th>Status</th>
+                <th>Iterations</th>
+                <th>Resume</th>
+                <th>Known Skills</th>
+                <th>Updated</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for item in analyses %}
+            <tr>
+                <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                <td class="cell-wrap">{{ item.job_title or '-' }}</td>
+                <td class="cell-wrap">{{ item.company_name or '-' }}</td>
+                <td>{{ item.source_platform or '-' }}</td>
+
+                <td>
+                    <span class="
+                        {% if item.ats_score >= 75 %}
+                            score-high
+                        {% elif item.ats_score >= 50 %}
+                            score-mid
+                        {% else %}
+                            score-low
+                        {% endif %}
+                    ">
+                        {{ item.ats_score }}%
+                    </span>
+                </td>
+
+                <td>
+                    {% if item.is_applied %}
+                        <span class="badge badge-applied">Applied</span>
+                    {% else %}
+                        <span class="badge badge-analyzed">Analyzed</span>
+                    {% endif %}
+                </td>
+
+                <td>{{ item.iteration_count }}</td>
+                <td class="cell-wrap">{{ item.resume_filename or '-' }}</td>
+                <td class="cell-wrap">{{ item.parsed_known_skills or '-' }}</td>
+                <td>{{ item.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+
+                <td>
+                    <a href="/jobs/{{ item.id }}" class="view-btn">View Details</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        {% set base_url = request.path %}
+        {% set query_args = 'per_page=' ~ per_page ~ '&search=' ~ search ~ '&start_date=' ~ start_date ~ '&end_date=' ~ end_date %}
+
+        {% if pagination.has_prev %}
+            <a class="nav-link" href="{{ base_url }}?page={{ pagination.prev_num }}&{{ query_args }}">Previous</a>
+        {% endif %}
+
+        <span>
+            Page {{ pagination.page }} of {{ pagination.pages }}
+        </span>
+
+        {% if pagination.has_next %}
+            <a class="nav-link" href="{{ base_url }}?page={{ pagination.next_num }}&{{ query_args }}">Next</a>
+        {% endif %}
+    </div>
+
+    {% else %}
+        <div class="empty-state">
+            No jobs found for the selected filters.
+        </div>
+    {% endif %}
+</div>
+</body>
+</html>

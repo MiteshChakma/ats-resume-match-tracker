@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Match Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>ATS Resume Match Tracker</h1>
+            <p class="subtitle">
+                Compare your resume against job descriptions, track iterations, and review saved applications.
+            </p>
+
+            <div class="button-group nav-actions">
+                <a href="/jobs" class="nav-btn">All Jobs</a>
+                <a href="/jobs/analyzed" class="nav-btn">Analyzed Jobs</a>
+                <a href="/jobs/applied" class="nav-btn">Applied Jobs</a>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2>Resume Upload</h2>
+            <p class="helper-text">Upload your resume PDF. The backend extracts and analyzes the resume text.</p>
+            <input type="file" id="resumeFile" accept=".pdf,.docx" required>
+        </div>
+
+        <div class="card">
+            <h2>Job Description</h2>
+            <p class="helper-text">Paste the full job description for best scoring and keyword extraction.</p>
+            <textarea id="jobDescription" placeholder="Paste the full job description here..."></textarea>
+        </div>
+
+        <div class="card">
+            <h2>Job Information</h2>
+
+            <label for="jobTitle">Job Title</label>
+            <input type="text" id="jobTitle" placeholder="e.g. Data Analyst">
+
+            <label for="companyName">Company Name</label>
+            <input type="text" id="companyName" placeholder="e.g. Google">
+
+            <label for="jobUrl">Job URL</label>
+            <input type="text" id="jobUrl" placeholder="Paste the JD link here">
+
+            <label for="sourcePlatform">Source Platform</label>
+            <select id="sourcePlatform">
+                <option value="">Select Platform</option>
+                <option value="duunitori">duunitori</option>
+                <option value="jobly">jobly</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="indeed">Indeed</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label class="checkbox-row">
+                <input type="checkbox" id="isApplied">
+                Mark as Applied
+            </label>
+        </div>
+
+        <div class="button-group">
+            <button id="analyzeBtn">Analyze Match</button>
+            <a href="/jobs" class="secondary-btn">View Job Dashboard</a>
+        </div>
+
+        <div class="card result-box">
+            <div class="result-header">
+                <div>
+                    <h2>Analysis Results</h2>
+                    <p class="helper-text">Your latest analysis will appear here after running the match.</p>
+                </div>
+                <span id="resultStatusBadge" class="status-pill">Not analyzed</span>
+            </div>
+
+            <div id="analysisResults" class="results-empty">
+                No analysis yet.
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

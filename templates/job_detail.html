@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ analysis.job_title or 'Job Details' }} - ATS Tracker</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 24px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            color: #222;
+        }
+
+        h3 {
+            margin: 0 0 12px 0;
+            color: #1f2937;
+        }
+
+        .subtitle {
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .top-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .top-bar a {
+            text-decoration: none;
+            padding: 10px 16px;
+            background: #1f6feb;
+            color: white;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+
+        .top-bar a:hover {
+            background: #1558c0;
+        }
+
+        .top-bar a.secondary {
+            background: #6c757d;
+        }
+
+        .top-bar a.secondary:hover {
+            background: #565e64;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            margin-bottom: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .row {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #444;
+        }
+
+        .job-url {
+            word-break: break-word;
+        }
+
+        .job-url a {
+            color: #1f6feb;
+            text-decoration: none;
+        }
+
+        .job-url a:hover {
+            text-decoration: underline;
+        }
+
+        .score {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .score-high {
+            color: #0f9d58;
+        }
+
+        .score-mid {
+            color: #e09f00;
+        }
+
+        .score-low {
+            color: #d93025;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .status-applied {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-not-applied {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .action-form {
+            margin: 0;
+        }
+
+        .action-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: background 0.2s ease;
+        }
+
+        .btn-mark-applied {
+            background: #0f9d58;
+        }
+
+        .btn-mark-applied:hover {
+            background: #0c7f47;
+        }
+
+        .btn-mark-not-applied {
+            background: #d93025;
+        }
+
+        .btn-mark-not-applied:hover {
+            background: #b3261e;
+        }
+
+        .btn-generate {
+            background: #1f6feb;
+        }
+
+        .btn-generate:hover {
+            background: #1558c0;
+        }
+
+        .list {
+            margin-top: 8px;
+        }
+
+        .list span {
+            display: inline-block;
+            background: #eef2ff;
+            color: #333;
+            padding: 6px 10px;
+            margin: 4px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .missing span {
+            background: #fee2e2;
+        }
+
+        .empty-note {
+            color: #666;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .suggestion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .suggestion-panel {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        ul.suggestion-list {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
+
+        ul.suggestion-list li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .rewrite-box {
+            background: #ffffff;
+            border-left: 4px solid #1f6feb;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .rewrite-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .timestamp {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .meta-note {
+            background: #eff6ff;
+            color: #1e3a8a;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .grid-2,
+            .suggestion-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar,
+            .action-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .top-bar a,
+            .action-btn {
+                text-align: center;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="top-bar">
+            <a href="/jobs/analyzed">Analyzed Jobs</a>
+            <a href="/jobs/applied">Applied Jobs</a>
+            <a href="/" class="secondary">Back to Analyzer</a>
+        </div>
+
+        <h1>{{ analysis.job_title or 'Job Detail' }}</h1>
+        <p class="subtitle">
+            Review ATS results, parsed data, current AI suggestions, and the frozen applied snapshot for this job.
+        </p>
+
+        <div class="card">
+            <div class="section-title">Job Overview</div>
+
+            <div class="row">
+                <span class="label">Company:</span>
+                {{ analysis.company_name or '-' }}
+            </div>
+
+            <div class="row">
+                <span class="label">Platform:</span>
+                {{ analysis.source_platform or '-' }}
+            </div>
+
+            <div class="row">
+                <span class="label">Resume File:</span>
+                {{ analysis.resume_filename or '-' }}
+            </div>
+
+            <div class="row">
+                <span class="label">Job URL:</span>
+                <span class="job-url">
+                    {% if analysis.job_url %}
+                        <a href="{{ analysis.job_url }}" target="_blank" rel="noopener noreferrer">{{ analysis.job_url }}</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="row">
+                <span class="label">Status:</span>
+                {% if analysis.is_applied %}
+                    <span class="status-badge status-applied">Applied</span>
+                {% else %}
+                    <span class="status-badge status-not-applied">Not Applied</span>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <span class="label">Iteration Count:</span>
+                {{ analysis.iteration_count }}
+            </div>
+
+            <div class="action-row">
+                <form class="action-form" method="POST" action="/jobs/{{ analysis.id }}/toggle-applied">
+                    {% if analysis.is_applied %}
+                        <button type="submit" class="action-btn btn-mark-not-applied">
+                            Mark as Not Applied
+                        </button>
+                    {% else %}
+                        <button type="submit" class="action-btn btn-mark-applied">
+                            Mark as Applied
+                        </button>
+                    {% endif %}
+                </form>
+
+                {% if not analysis.is_applied %}
+                <form class="action-form" method="POST" action="/jobs/{{ analysis.id }}/generate-suggestions">
+                    <button type="submit" class="action-btn btn-generate">
+                        Generate AI Suggestions
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            {% if analysis.is_applied %}
+            <div class="meta-note">
+                This job is marked as applied. The suggestion snapshot saved at apply-time is preserved for this record.
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="section-title">Job Description</div>
+
+            {% if analysis.job_description %}
+                <div id="jd-short" style="white-space: pre-wrap; line-height: 1.5;">
+                    {{ analysis.job_description[:300] }}{% if analysis.job_description|length > 300 %}...{% endif %}
+                </div>
+
+                <div id="jd-full" style="display: none; white-space: pre-wrap; line-height: 1.5;">
+                    {{ analysis.job_description }}
+                </div>
+
+                {% if analysis.job_description|length > 300 %}
+                    <button
+                        id="jd-toggle-btn"
+                        type="button"
+                        class="action-btn btn-generate"
+                        style="margin-top: 12px;"
+                        onclick="toggleJobDescription()"
+                    >
+                        Show More
+                    </button>
+                {% endif %}
+            {% else %}
+                <p class="empty-note">No job description saved for this record.</p>
+            {% endif %}
+        </div>
+        <div class="card">
+            <div class="section-title">ATS Score</div>
+
+            <div class="score
+                {% if analysis.ats_score >= 75 %}
+                    score-high
+                {% elif analysis.ats_score >= 50 %}
+                    score-mid
+                {% else %}
+                    score-low
+                {% endif %}
+            ">
+                {{ analysis.ats_score }}%
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="section-title">Matched Skills</div>
+                <div class="list">
+                    {% set matched = (analysis.matched_skills or '').split(',') %}
+                    {% if matched and matched[0] %}
+                        {% for skill in matched if skill %}
+                            <span>{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-note">No matched skills recorded.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">Missing Skills</div>
+                <div class="list missing">
+                    {% set missing = (analysis.missing_skills or '').split(',') %}
+                    {% if missing and missing[0] %}
+                        {% for skill in missing if skill %}
+                            <span>{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="empty-note">No missing skills recorded.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="section-title">Parsed Job Description</div>
+
+                <div class="row">
+                    <span class="label">Role Level:</span>
+                    {{ analysis.parsed_role_level or '-' }}
+                </div>
+
+                <div class="row">
+                    <span class="label">Experience Required:</span>
+                    {% if analysis.parsed_experience_years is not none %}
+                        {{ analysis.parsed_experience_years }} years
+                    {% else %}
+                        Not detected
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <span class="label">Known Skills:</span>
+                    <div class="list">
+                        {% set jd_skills = (analysis.parsed_known_skills or '').split(',') %}
+                        {% if jd_skills and jd_skills[0] %}
+                            {% for skill in jd_skills if skill %}
+                                <span>{{ skill }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-note">No parsed JD skills recorded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <span class="label">Candidate Keywords:</span>
+                    <div class="list">
+                        {% set jd_keywords = (analysis.parsed_candidate_keywords or '').split(',') %}
+                        {% if jd_keywords and jd_keywords[0] %}
+                            {% for kw in jd_keywords if kw %}
+                                <span>{{ kw }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-note">No parsed JD candidate keywords recorded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">Parsed Resume</div>
+
+                <div class="row">
+                    <span class="label">Role Level:</span>
+                    {{ analysis.parsed_resume_role_level or '-' }}
+                </div>
+
+                <div class="row">
+                    <span class="label">Experience Found:</span>
+                    {% if analysis.parsed_resume_experience_years is not none %}
+                        {{ analysis.parsed_resume_experience_years }} years
+                    {% else %}
+                        Not detected
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <span class="label">Resume Known Skills:</span>
+                    <div class="list">
+                        {% set resume_skills = (analysis.parsed_resume_known_skills or '').split(',') %}
+                        {% if resume_skills and resume_skills[0] %}
+                            {% for skill in resume_skills if skill %}
+                                <span>{{ skill }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-note">No parsed resume skills recorded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <span class="label">Resume Candidate Keywords:</span>
+                    <div class="list">
+                        {% set resume_keywords = (analysis.parsed_resume_candidate_keywords or '').split(',') %}
+                        {% if resume_keywords and resume_keywords[0] %}
+                            {% for kw in resume_keywords if kw %}
+                                <span>{{ kw }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-note">No parsed resume candidate keywords recorded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <span class="label">Resume Job Titles:</span>
+                    <div class="list">
+                        {% set resume_titles = (analysis.parsed_resume_job_titles or '').split(',') %}
+                        {% if resume_titles and resume_titles[0] %}
+                            {% for title in resume_titles if title %}
+                                <span>{{ title }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-note">No parsed resume job titles recorded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Resume Text Preview</div>
+            {% if analysis.resume_text %}
+                <div style="white-space: pre-wrap; line-height: 1.5;">{{ analysis.resume_text[:2000] }}</div>
+            {% else %}
+                <p class="empty-note">No resume text saved for this record.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="section-title">Current AI Suggestions</div>
+
+            {% if analysis.current_suggestions_generated_at %}
+                <div class="row timestamp">
+                    <span class="label">Last Generated:</span>
+                    {{ analysis.current_suggestions_generated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                </div>
+            {% endif %}
+
+            {% if current_suggestions %}
+                {% if current_suggestions.meta %}
+                <div class="meta-note">
+                    Generated score snapshot: {{ current_suggestions.meta.score_at_generation }}%
+                </div>
+                {% endif %}
+
+                <div class="suggestion-grid">
+                    <div class="suggestion-panel">
+                        <h3>{{ current_suggestions.model_a.model_name }}</h3>
+
+                        <div class="row">
+                            <span class="label">Summary:</span>
+                            {{ current_suggestions.model_a.summary }}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Priority Fixes:</span>
+                            {% if current_suggestions.model_a.priority_fixes %}
+                                <ul class="suggestion-list">
+                                    {% for item in current_suggestions.model_a.priority_fixes %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="empty-note">No priority fixes.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Missing Skills to Address:</span>
+                            <div class="list missing">
+                                {% if current_suggestions.model_a.missing_skills_to_address %}
+                                    {% for item in current_suggestions.model_a.missing_skills_to_address %}
+                                        <span>{{ item }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="empty-note">No missing skills listed.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Missing Keywords to Consider:</span>
+                            <div class="list">
+                                {% if current_suggestions.model_a.missing_keywords_to_consider %}
+                                    {% for item in current_suggestions.model_a.missing_keywords_to_consider %}
+                                        <span>{{ item }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="empty-note">No missing keywords listed.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Bullet Improvements:</span>
+                            {% if current_suggestions.model_a.bullet_improvement_suggestions %}
+                                <div style="margin-top: 10px;">
+                                    {% for item in current_suggestions.model_a.bullet_improvement_suggestions %}
+                                        <div class="rewrite-box">
+                                            <span class="rewrite-label">Original</span>
+                                            <div>{{ item.original }}</div>
+
+                                            <span class="rewrite-label" style="margin-top: 10px;">Improved</span>
+                                            <div>{{ item.improved }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="empty-note">No bullet rewrite suggestions.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Honesty Warnings:</span>
+                            {% if current_suggestions.model_a.honesty_warnings %}
+                                <ul class="suggestion-list">
+                                    {% for item in current_suggestions.model_a.honesty_warnings %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="empty-note">No honesty warnings.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="suggestion-panel">
+                        <h3>{{ current_suggestions.model_b.model_name }}</h3>
+
+                        <div class="row">
+                            <span class="label">Summary:</span>
+                            {{ current_suggestions.model_b.summary }}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Priority Fixes:</span>
+                            {% if current_suggestions.model_b.priority_fixes %}
+                                <ul class="suggestion-list">
+                                    {% for item in current_suggestions.model_b.priority_fixes %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="empty-note">No priority fixes.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Missing Skills to Address:</span>
+                            <div class="list missing">
+                                {% if current_suggestions.model_b.missing_skills_to_address %}
+                                    {% for item in current_suggestions.model_b.missing_skills_to_address %}
+                                        <span>{{ item }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="empty-note">No missing skills listed.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Missing Keywords to Consider:</span>
+                            <div class="list">
+                                {% if current_suggestions.model_b.missing_keywords_to_consider %}
+                                    {% for item in current_suggestions.model_b.missing_keywords_to_consider %}
+                                        <span>{{ item }}</span>
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="empty-note">No missing keywords listed.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Bullet Improvements:</span>
+                            {% if current_suggestions.model_b.bullet_improvement_suggestions %}
+                                <div style="margin-top: 10px;">
+                                    {% for item in current_suggestions.model_b.bullet_improvement_suggestions %}
+                                        <div class="rewrite-box">
+                                            <span class="rewrite-label">Original</span>
+                                            <div>{{ item.original }}</div>
+
+                                            <span class="rewrite-label" style="margin-top: 10px;">Improved</span>
+                                            <div>{{ item.improved }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="empty-note">No bullet rewrite suggestions.</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Honesty Warnings:</span>
+                            {% if current_suggestions.model_b.honesty_warnings %}
+                                <ul class="suggestion-list">
+                                    {% for item in current_suggestions.model_b.honesty_warnings %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="empty-note">No honesty warnings.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="empty-note">No current AI suggestions generated yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="section-title">Frozen Applied Suggestions</div>
+
+            {% if analysis.applied_suggestions_saved_at %}
+                <div class="row timestamp">
+                    <span class="label">Saved At:</span>
+                    {{ analysis.applied_suggestions_saved_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                </div>
+            {% endif %}
+
+            {% if applied_suggestions %}
+                {% if applied_suggestions.meta %}
+                <div class="meta-note">
+                    Saved score snapshot at apply-time: {{ applied_suggestions.meta.score_at_generation }}%
+                </div>
+                {% endif %}
+
+                <div class="suggestion-grid">
+                    <div class="suggestion-panel">
+                        <h3>{{ applied_suggestions.model_a.model_name }}</h3>
+
+                        <div class="row">
+                            <span class="label">Summary:</span>
+                            {{ applied_suggestions.model_a.summary }}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Priority Fixes:</span>
+                            {% if applied_suggestions.model_a.priority_fixes %}
+                                <ul class="suggestion-list">
+                                    {% for item in applied_suggestions.model_a.priority_fixes %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="empty-note">No priority fixes saved.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="suggestion-panel">
+                        <h3>{{ applied_suggestions.model_b.model_name }}</h3>
+
+                        <div class="row">
+                            <span class="label">Summary:</span>
+                            {{ applied_suggestions.model_b.summary }}
+                        </div>
+
+                        <div class="row">
+                            <span class="label">Priority Fixes:</span>
+                            {% if applied_suggestions.model_b.priority_fixes %}
+                                <ul class="suggestion-list">
+                                    {% for item in applied_suggestions.model_b.priority_fixes %}
+                                        <li>{{ item }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="empty-note">No priority fixes saved.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p class="empty-note">No frozen applied suggestion snapshot saved yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="section-title">Timestamps</div>
+
+            <div class="row">
+                <span class="label">Created:</span>
+                {{ analysis.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </div>
+
+            <div class="row">
+                <span class="label">Updated:</span>
+                {{ analysis.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </div>
+        </div>
+    </div>
+    <script>
+    function toggleJobDescription() {
+        const shortText = document.getElementById('jd-short');
+        const fullText = document.getElementById('jd-full');
+        const button = document.getElementById('jd-toggle-btn');
+
+        const isFullVisible = fullText.style.display === 'block';
+
+        if (isFullVisible) {
+            fullText.style.display = 'none';
+            shortText.style.display = 'block';
+            button.textContent = 'Show More';
+        } else {
+            fullText.style.display = 'block';
+            shortText.style.display = 'none';
+            button.textContent = 'Show Less';
+        }
+    }
+</script>
+</body>
+</html>
