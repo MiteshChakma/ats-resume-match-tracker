@@ -225,3 +225,11 @@ http://127.0.0.1:5000
 
 ```
 
+# Screenshots
+
+## Home Dashboard
+![ATS Analysis](assets/analysis-results.png)
+![Home Dashboard](assets/HomePage.jpg)
+![Jobs Dashboard](assets/JobDashboard.jpg)
+![AI Suggestions](assets/LLMSuggestions.jpg)
+
