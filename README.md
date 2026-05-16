@@ -228,8 +228,16 @@ http://127.0.0.1:5000
 # Screenshots
 
 ## Home Dashboard
-![ATS Analysis](assets/analysis-results.png)
 ![Home Dashboard](assets/HomePage.jpg)
-![Jobs Dashboard](assets/JobDashboard.jpg)
-![AI Suggestions](assets/LLMSuggestions.jpg)
 
+## ATS Analysis Results
+![ATS Analysis](assets/analysis-results.jpg)
+
+## All Jobs Dashboard
+![Jobs Dashboard](assets/JobDashboard.jpg)
+
+## Analyzed Jobs Dashboard
+![Analyzed Dashboard](assets/analyzedDashboard.jpg)
+
+## Dual LLM Suggestions
+![AI Suggestions](assets/LLMSuggestions.jpg)
